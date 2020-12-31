@@ -1,14 +1,56 @@
-const http = require('http');
+var fs = require('fs');
 
-// Create an instance of the http server to handle HTTP requests
-let app = http.createServer((req, res) => {
-    // Set a response type of plain text for the response
-    res.writeHead(200, { 'Content-Type': 'text/plain ' });
+var dataObject = {
+    "a": 1,
+    "b": 2
+};
 
-    // Send back a response and end the connection
-    res.end('Server started\n');
-});
+function createDbFile() {
+    let initialized = fs.readdirSync('./').includes('mydb.txt')
+    if (!initialized) {
+        fs.appendFile('mydb.txt', '{}', function(err) {
+            if (err) throw err;
+            console.log('DB File Created');
+        });
+    } else {
+        console.log('File already exists');
+    }
+}
 
-// Start the server on port 3000
-app.listen(3000, '127.0.0.1');
-console.log('Node server running on port 3000');
+function readFromFile() {
+    return JSON.parse(fs.readFileSync('./mydb.txt'), { encoding: 'utf-8' });
+}
+
+function writeToFile(newObject) {
+    fs.writeFileSync('./mydb.txt', JSON.stringify(newObject), (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('Data written to file', newObject);
+        }
+    });
+}
+
+function read() {
+    console.log(readFromFile());
+}
+
+function create(data) {
+    createDbFile(data);
+}
+
+function update(key, value) {
+    dataObject[key] = value;
+    writeToFile(dataObject);
+}
+
+function destroy(key) {
+    delete dataObject[key];
+    writeToFile(dataObject);
+}
+
+create(dataObject)
+update("c", 3)
+read()
+destroy("b")
+read()
